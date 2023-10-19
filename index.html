@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="copyright" content="© 2023 Esteban Arroyo">
+    <meta name="description" content="Página para realizar calculos de comparaciones múltiples usando el método LSD Fisher"/>
+    <meta name="keywords" content="estadística, inferencia, comparación, Fisher, LSD, promedios, grupos, múltiples"/>
+    <meta name="author" content="Esteban Arroyo" />
+    <meta name="robots" content="index"/>
+    <meta http-equiv="cache-control" content="no-cache"/>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.2.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.2.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/@holoviz/panel@0.13.0/dist/panel.min.js"></script>
+    <script type="text/javascript">
+      Bokeh.set_log_level("info");
+    </script>
+
+    <!-- Pyscript -->
+    <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+    <py-env>
+        - numpy
+        - pandas
+        - matplotlib
+        - scipy
+        - panel==0.13.1
+    </py-env>
+
+    <style>
+    html {
+        min-height: 100%;
+        position: relative;
+    }
+    body {
+        margin: 0;
+        margin-bottom: 100px;
+    }
+    footer {
+        position: absolute;
+        bottom: 0;
+    }
+    </style>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+
+    <title>Comparaciones múltiples LSD Fisher</title>
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+          <a class="navbar-brand" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07Z"/>
+              </svg>
+          </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav ms-auto">
+              <a class="nav-link" href="#inicio">Inicio</a>
+              <a class="nav-link" href="#contacto">Contacto</a>
+              <!-- <a class="nav-link" href="#">Otros</a>-->
+            </div>
+          </div>
+        </div>
+    </nav>
+
+    <div class="container py-2">
+        <h4 class="text-center">Comparaciones múltiples LSD Fisher</h4>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col">
+                    <img src="img/fisher_ronald.jpg" width="150" class="img-responsive mx-auto">
+                    <p class="text-center" style="margin-bottom:0;">Ronald Aylmer Fisher</p>
+                    <p class="text-center" style="margin-top:0;">1890 - 1962</p>
+                </div>
+                <div class="col">
+                    <p class="text-justify">
+                        La primera técnica de comparación por pares fue desarrollada por Fisher en 1935 y se denomina prueba de diferencia menos significativa (LSD). Esta técnica sólo se puede utilizar si el ómnibus anova F es significativo.
+                    </p>
+                    <p class="text-justify">
+                        La idea principal del lsd es calcular la diferencia significativa más pequeña entre dos medias como si estas medias hubieran sido las únicas medias a comparar y declarar significativa cualquier diferencia mayor que el LSD.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-2">
+      <h5>Ingrese la cantidad de grupos a comparar</h4>
+      <br>
+      <div id="num_input"></div>
+      <div class="py-1" id="inf"></div>
+      <div class="py-1" id="tex_input"></div>
+      <div class="py-2" id="boton" style="margin-bottom:50px;"></div>
+      <div class="py-2" id="tab8"></div>
+      <div class="py-2" id="tab9" style="margin-bottom:10px;"></div>
+      <div class="py-2 mx-auto" id="grafico" style="margin-bottom:70px;"></div>
+</div>
+
+<py-script>
+import io
+import asyncio
+import panel as pn
+import pandas as pd
+import numpy as np
+from panel.io.pyodide import show
+import scipy.stats
+#import itertools
+from itertools import combinations
+#import math
+from math import sqrt
+import matplotlib.pyplot as plt
+
+int_input = pn.widgets.IntInput(name='Grupos', value=3, step=1, start=0, end=1000)
+button_upload = pn.widgets.Button(name='Procesar', button_type='primary', width=100)
+col = pn.Column(int_input, button_upload, height=100)
+button_cal = pn.widgets.Button(name='Calcular', button_type='primary', width=100)
+row = pn.Row(button_cal)
+
+def process_input(event):
+    document.getElementById('tex_input').innerHTML=""
+    document.getElementById('boton').innerHTML=""
+    document.getElementById('inf').innerHTML=""
+    document.getElementById('tab8').innerHTML=""
+    document.getElementById('tab9').innerHTML=""
+    document.getElementById('grafico').innerHTML=""
+    n = 1
+    while n <= int_input.value:
+        globals()["prom%s" % n]=pn.widgets.FloatInput(name='Promedio grupo %s'% n, Mode=float, value=0., step=1e-1, start=0, end=1000, placeholder='Ingrese promedio ')
+        globals()["dest%s" % n]=pn.widgets.FloatInput(name='Desviación Típica grupo %s'% n, value=0., step=1e-1, start=0, end=1000, Mode=float, placeholder='Ingrese Desviación Típica')
+        globals()["tam%s" % n]=pn.widgets.FloatInput(name='Tamaño grupo %s'% n, Mode=float, value=0., step=1e-1, start=0, end=1000, placeholder='Ingrese Tamaño')
+        pn.Row(globals()["prom%s" % n], globals()["dest%s" % n], globals()["tam%s" % n]).servable(target='tex_input')
+        n +=1
+    row.servable(target='boton')
+    button_cal.on_click(on_btn_click)
+    pyscript.write('inf', "Ingrese los Promedios, Desviaciones y tamaños de cada grupo")
+
+def on_btn_click(event):
+    promedios=[]  #Se cargan los promedios
+    desvia=[]  #Se cargan las desviaciones
+    tama=[] #Se cargan los tamaños
+    producto=0
+    suma=0
+    gl = 0
+    total = 0
+    n = 1
+    while n <= int_input.value:
+        promedios.append(globals()["prom%s" % n].value)
+        desvia.append(globals()["dest%s" % n].value)
+        tama.append(globals()["tam%s" % n].value)
+        n +=1
+    for d,e in zip(desvia,tama):
+        producto += (d**2)*e
+    for d in tama:
+        gl += d
+    for d,e in zip(promedios,tama):
+        suma += d*e
+    promedioT = suma/gl
+    gl_intra = len(promedios)-1
+    for d,e,f in zip(promedios, desvia, tama):
+        total += ((d-promedioT)**2+(e**2))*f
+    promedio_cuadrados_entre = (total - producto)/gl_intra 
+    promedio_cuadrados_dentro = producto/(gl-len(promedios))
+    valor_F=promedio_cuadrados_entre/promedio_cuadrados_dentro
+    #pyscript.write('anova', "Tabla de ANOVA")
+    #pyscript.write('tab1', f'Promedio cuadrados entre: {promedio_cuadrados_entre}' )
+    #pyscript.write('tab2', f'Promedio cuadrados dentro: {promedio_cuadrados_dentro}' )
+    #pyscript.write('tab3', f'Suma cuadrados dentro: {producto}')
+    #pyscript.write('tab4', f'Suma cuadrados entre: {total-producto}')
+    #pyscript.write('tab5', f'Total: {total}')
+    #pyscript.write('tab6', f'Valor F: {valor_F}')
+    prob = scipy.stats.f.cdf(x=(valor_F), dfn = gl_intra, dfd = gl-len(promedios))
+    #pyscript.write('tab7', f'p-value: {1-prob}')
+    #Hacemos las combinaciones
+    temp = combinations(promedios, 2)  #combinaciones de promedios
+    ns = combinations(tama, 2) # combinaciones de los tamaños
+    #Las agregamos a una lista
+    a=[]
+    for i in list(temp):
+        a.append(i)
+    b=[]
+    for i in list(ns):
+        b.append(i)
+    #Las converimos en data frame
+    df = pd.DataFrame(a)
+    df2 = pd.DataFrame(b)
+    #Agregamos los tamaños al df
+    df["n1"]=df2[0]
+    df["n2"]=df2[1]
+    #le gregamos las diferencias de promedios
+    df["dif"]=df[0]-df[1]
+    #Calculamos las distribución T de las diferencias
+    df["t-value"] = ""
+    for i, row in df.iterrows():
+        df_index2 = df.loc[i]
+        results = abs(df["dif"])/sqrt(((1/df_index2["n1"])+(1/df_index2["n2"]))* promedio_cuadrados_dentro)
+        df["t-value"] = results
+    #Luego agregamos el p-valor
+    df["p-value"]= (1-(scipy.stats.t.cdf(x=df["t-value"] , df=gl-3)))*2
+    df = df.drop(["n1", "n2"], axis=1)
+    df.loc[df["p-value"] < 0.05,"sig"]="*"
+    df.loc[df["p-value"]>=0.05,"sig"]=""
+    df_pane = pn.pane.DataFrame(df, col_space=80, width=800, justify='left', index=False)
+    #pyscript.write('tab8', df)
+    anova = pd.DataFrame({
+        "Origen Variaciones":["Entre grupos", "Dentro de grupos", "Total"],
+        "Suma Cuadrados":[total-producto, producto, total],
+        "GL":[gl_intra, gl-len(promedios), gl-1],
+        "Promedio cuadrados":[promedio_cuadrados_entre, promedio_cuadrados_dentro, ""],
+        "F-value":[valor_F, "", ""],
+        "p-value":[1-prob, "",""]
+    })
+    df_anova = pn.pane.DataFrame(anova, col_space=100, width=800, justify='left', index=False)
+    pn.Column("## Tabla ANOVA", df_anova, height=150, width=1000).servable(target='tab8')
+    pn.Column("## Tabla de las diferencias", df_pane, "*The mean difference is significant at the 0.05 level.", height=300, width=1000).servable(target='tab9')
+    y_error = []
+    abc = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
+    letra = []
+    indice = 0
+    while indice < len(promedios):
+        letra.append(abc[indice])
+        indice +=1
+    indice = 0
+    while indice < len(promedios):
+        y_error.append( (desvia[indice]/sqrt(tama[indice]))*1.96)
+        indice +=1
+    plt.errorbar(x = letra, y=promedios, yerr=y_error, fmt="--ro", capsize = 10, ecolor = "g", elinewidth=3)
+    #plt.ylim(50,100)
+    plt.xlabel('Grupos')
+    plt.ylabel('Promedios')
+    plt.title('Gráfico de Promedios', fontsize=20)
+    pyscript.write('grafico', plt)
+
+
+button_upload.on_click(process_input)
+await show(col, 'num_input')
+
+</py-script>
+
+    <footer class="container-fluid bg-dark py-3">
+        <div class="container align-content-center align-items-center text-center">
+            <div class="row">
+                <div class="col-sm text-start">
+                    <h4 class="text-white">&copy; Derechos Reservados - Esteban Arroyo 2023</h4>
+                </div>
+                <div class="col-sm">
+                    <h3 id="contacto" class="text-white text-start">Contacto: estebanlab@gmail.com</h3>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+</body>
+</html>
