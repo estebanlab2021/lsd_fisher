@@ -34,21 +34,7 @@
         - panel==0.13.1
     </py-env>
 
-    <style>
-    html {
-        min-height: 100%;
-        position: relative;
-    }
-    body {
-        margin: 0;
-        margin-bottom: 100px;
-    }
-    footer {
-        position: absolute;
-        bottom: 0;
-    }
-    </style>
-
+    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
 
@@ -66,10 +52,13 @@
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
+          <div class="col-sm text-start">
+            <p class="text-secondary h5">  &copy; Derechos Reservados - Esteban Arroyo 2023</p>
+          </div>
           <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav ms-auto">
               <a class="nav-link" href="#inicio">Inicio</a>
-              <a class="nav-link" href="#contacto">Contacto</a>
+              <a class="nav-link" href="#">estebanlab@gmail.com</a>
               <!-- <a class="nav-link" href="#">Otros</a>-->
             </div>
           </div>
@@ -87,10 +76,10 @@
                 </div>
                 <div class="col">
                     <p class="text-justify">
-                        La primera técnica de comparación por pares fue desarrollada por Fisher en 1935 y se denomina prueba de diferencia menos significativa (LSD). Esta técnica sólo se puede utilizar si el ómnibus anova F es significativo.
+                        La primera técnica de comparación por pares fue desarrollada por Fisher en 1935 y se denomina prueba de diferencia menos significativa (LSD). Esta técnica sólo se puede utilizar si el test anova F es significativo.
                     </p>
                     <p class="text-justify">
-                        La idea principal del lsd es calcular la diferencia significativa más pequeña entre dos medias como si estas medias hubieran sido las únicas medias a comparar y declarar significativa cualquier diferencia mayor que el LSD.
+                        La idea principal del LSD es calcular la diferencia significativa más pequeña entre dos medias como si estas medias hubieran sido las únicas medias a comparar y declarar significativa cualquier diferencia mayor que el LSD.
                     </p>
                 </div>
             </div>
@@ -105,9 +94,17 @@
       <div class="py-1" id="tex_input"></div>
       <div class="py-2" id="boton" style="margin-bottom:50px;"></div>
       <div class="py-2" id="tab8"></div>
-      <div class="py-2" id="tab9" style="margin-bottom:10px;"></div>
-      <div class="py-2 mx-auto" id="grafico" style="margin-bottom:70px;"></div>
-</div>
+
+      <div class="row align-items-center" >
+        <div style="float: left; width: 50%;">
+            <div class="mx-auto" id="tab9"></div>
+        </div>
+        <div style="float: right; width: 50%;">
+            <div class="mx-auto" id="grafico"></div>
+        </div>
+      </div>
+      
+    </div>
 
 <py-script>
 import io
@@ -122,6 +119,7 @@ from itertools import combinations
 #import math
 from math import sqrt
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 
 int_input = pn.widgets.IntInput(name='Grupos', value=3, step=1, start=0, end=1000)
 button_upload = pn.widgets.Button(name='Procesar', button_type='primary', width=100)
@@ -236,12 +234,19 @@ def on_btn_click(event):
     while indice < len(promedios):
         y_error.append( (desvia[indice]/sqrt(tama[indice]))*1.96)
         indice +=1
-    plt.errorbar(x = letra, y=promedios, yerr=y_error, fmt="--ro", capsize = 10, ecolor = "g", elinewidth=3)
-    #plt.ylim(50,100)
-    plt.xlabel('Grupos')
-    plt.ylabel('Promedios')
-    plt.title('Gráfico de Promedios', fontsize=20)
-    pyscript.write('grafico', plt)
+    fig = Figure(figsize=(6, 6))
+    #plt.figure(figsize=(6, 6))
+    ax = fig.subplots()
+    ax.errorbar(x = letra, y=promedios, yerr=y_error, fmt="--ro", capsize = 10, ecolor = "g", elinewidth=3)
+    #ax.xlabel('Grupos')
+    #ax.ylabel('Promedios')
+    #ax.title('Gráfico de Promedios', fontsize=20)
+    ax.set_xlabel('Grupos')
+    ax.set_ylabel('Promedios')
+    ax.set_title('Gráfico de Promedios', fontsize=20)
+    graf_pane= pn.pane.Matplotlib(fig, dpi=100)
+    #pyscript.write('grafico', plt)
+    pn.Row(graf_pane).servable(target="grafico")
 
 
 button_upload.on_click(process_input)
@@ -249,7 +254,7 @@ await show(col, 'num_input')
 
 </py-script>
 
-    <footer class="container-fluid bg-dark py-3">
+    <!--<footer class="container-fluid bg-dark py-2" style="margin-top:10px;">
         <div class="container align-content-center align-items-center text-center">
             <div class="row">
                 <div class="col-sm text-start">
@@ -260,7 +265,7 @@ await show(col, 'num_input')
                 </div>
             </div>
         </div>
-    </footer>
+    </footer>-->
 
     <!-- Option 1: Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
