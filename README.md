@@ -22,7 +22,7 @@
    <img src="img/formula2.png" width="500" height="150">
 </p>
 
-<p>La finalidad de este ejercicio, es aprovechar la ventaja de cálculo comparativa del LSD de Fisher, cuando solo de dispone de los promedios, desviación y tamaño de cada grupo o tratamiento y no de la data completa. Para ello se realizó en el framework de Pyscript que permite incorporar el lenguaje de python en una página HTML y así tener mayor facilidad para realizar los cálculos.</p>
+<p>La finalidad de este ejercicio, es aprovechar la ventaja de cálculo comparativa del LSD de Fisher, cuando solo se dispone de los promedios, desviación y tamaño de cada grupo o tratamiento y no de la data completa. Para ello se realizó en el framework de Pyscript que permite incorporar el lenguaje de python en una página HTML y así tener mayor facilidad para realizar los cálculos.</p>
 
 <p>La página la pueden probar en el siguente link: https://estebanlab2021.github.io/lsd_fisher/</p>
 
